@@ -72,11 +72,12 @@ cmd.lsPackages = (scope, team, opts) => {
     if (team) {
       uri = `/-/org/${eu(scope)}/${eu(team)}/package`
     } else {
-      uri = `/-/user/${eu(scope)}/package`
+      uri = `/-/org/${eu(scope)}/package`
     }
+    opts = opts.concat({query: {format: 'cli'}})
     return npmFetch.json(uri, opts).catch(err => {
       if (err.code === 'E404' && !team) {
-        uri = `/-/org/${eu(scope)}/package`
+        uri = `/-/user/${eu(scope)}/package`
         return npmFetch.json(uri, opts)
       } else {
         throw err
