@@ -261,6 +261,22 @@ test('ls-collaborators bad response', t => {
   })
 })
 
+test('error on non-registry specs', t => {
+  const resolve = () => { throw new Error('should not succeed') }
+  const reject = err => t.match(
+    err.message, /spec.*must be a registry spec/, 'registry spec required'
+  )
+  return Promise.all([
+    access.public('foo/bar').then(resolve, reject),
+    access.restricted('foo/bar').then(resolve, reject),
+    access.grant('foo/bar', 'myorg', 'myteam', 'read-only').then(resolve, reject),
+    access.revoke('foo/bar', 'myorg', 'myteam').then(resolve, reject),
+    access.lsCollaborators('foo/bar').then(resolve, reject),
+    access.tfaRequired('foo/bar').then(resolve, reject),
+    access.tfaNotRequired('foo/bar').then(resolve, reject)
+  ])
+})
+
 test('edit', t => {
   t.equal(typeof access.edit, 'function', 'access.edit exists')
   t.throws(() => {

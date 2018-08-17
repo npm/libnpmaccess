@@ -10,6 +10,14 @@ const AccessConfig = figgyPudding({
 })
 
 const eu = encodeURIComponent
+const npar = spec => {
+  spec = npa(spec)
+  if (!spec.registry) {
+    throw new Error('`spec` must be a registry spec')
+  }
+  return spec
+}
+
 const cmd = module.exports = {}
 
 cmd.public = (spec, opts) => setAccess(spec, 'public', opts)
@@ -17,7 +25,7 @@ cmd.restricted = (spec, opts) => setAccess(spec, 'restricted', opts)
 function setAccess (spec, access, opts) {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
-    spec = npa(spec)
+    spec = npar(spec)
     validate('OSO', [spec, access, opts])
     const uri = `/-/package/${eu(spec.name)}/access`
     return npmFetch.json(uri, opts.concat({
@@ -31,7 +39,7 @@ function setAccess (spec, access, opts) {
 cmd.grant = (spec, scope, team, permissions, opts) => {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
-    spec = npa(spec)
+    spec = npar(spec)
     validate('OSSSO', [spec, scope, team, permissions, opts])
     scope = scope.replace(/^@/, '')
     if (permissions !== 'read-write' && permissions !== 'read-only') {
@@ -50,7 +58,7 @@ cmd.grant = (spec, scope, team, permissions, opts) => {
 cmd.revoke = (spec, scope, team, opts) => {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
-    spec = npa(spec)
+    spec = npar(spec)
     validate('OSSO', [spec, scope, team, opts])
     scope = scope.replace(/^@/, '')
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
@@ -89,7 +97,7 @@ cmd.lsPackages = (scope, team, opts) => {
 cmd.lsCollaborators = (spec, user, opts) => {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
-    spec = npa(spec)
+    spec = npar(spec)
     validate('OSO|OZO', [spec, user, opts])
     const uri = `/-/package/${eu(spec.name)}/collaborators`
     const query = {format: 'cli'}
@@ -120,7 +128,7 @@ cmd.tfaNotRequired = (spec, opts) => setRequires2fa(spec, false, opts)
 function setRequires2fa (spec, required, opts) {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
-    spec = npa(spec)
+    spec = npar(spec)
     validate('OBO', [spec, required, opts])
     const uri = `/-/package/${eu(spec.name)}/access`
     return npmFetch.json(uri, opts.concat({
