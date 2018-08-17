@@ -91,9 +91,11 @@ cmd.lsCollaborators = (spec, user, opts) => {
   return new opts.Promise((resolve, reject) => {
     spec = npa(spec)
     validate('OSO|OZO', [spec, user, opts])
-    const uri = `/-/package/${spec.escapedName}/collaborators`
+    const uri = `/-/package/${eu(spec.name)}/collaborators`
+    const query = {format: 'cli'}
+    if (user) { query.user = user }
     return npmFetch.json(uri, opts.concat({
-      query: {user, format: 'cli'}
+      query
     })).then(translatePermissions).then(resolve, reject)
   })
 }
