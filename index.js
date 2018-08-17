@@ -111,7 +111,8 @@ cmd.lsCollaborators = (spec, user, opts) => {
 function translatePermissions (perms) {
   if (!perms) { return null }
   const newPerms = {}
-  for (let [key, val] of Object.entries(perms)) {
+  for (let key of Object.keys(perms)) {
+    const val = perms[key]
     if (val === 'read') {
       newPerms[key] = 'read-only'
     } else if (val === 'write') {
