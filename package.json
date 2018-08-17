@@ -1,6 +1,7 @@
 {
   "name": "libnpmaccess",
   "version": "1.0.0",
+  "description": "programmatic library for `npm access` commands",
   "author": {
     "name": "Kat Marchán",
     "email": "kzm@zkat.tech",
@@ -28,5 +29,10 @@
     "url": "https://github.com/npm/libnpmaccess.git"
   },
   "bugs": "https://github.com/npm/libnpmaccess/issues",
-  "homepage": "https://npmjs.com/package/libnpmaccess"
+  "homepage": "https://npmjs.com/package/libnpmaccess",
+  "dependencies": {
+    "aproba": "^2.0.0",
+    "npm-package-arg": "^6.1.0",
+    "npm-registry-fetch": "^3.2.1"
+  }
 }
