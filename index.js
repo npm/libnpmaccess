@@ -119,7 +119,7 @@ function setRequires2fa (spec, required, opts) {
   return new opts.Promise((resolve, reject) => {
     spec = npa(spec)
     validate('OBO', [spec, required, opts])
-    const uri = `/-/package/${spec.escapedName}/access`
+    const uri = `/-/package/${eu(spec.name)}/access`
     return npmFetch.json(uri, opts.concat({
       method: 'POST',
       body: {publish_requires_tfa: required},
