@@ -12,14 +12,14 @@ const AccessConfig = figgyPudding({
 const eu = encodeURIComponent
 const cmd = module.exports = {}
 
-cmd.public = (spec, opts) => setAccess(spec, true, opts)
-cmd.restricted = (spec, opts) => setAccess(spec, false, opts)
+cmd.public = (spec, opts) => setAccess(spec, 'public', opts)
+cmd.restricted = (spec, opts) => setAccess(spec, 'restricted', opts)
 function setAccess (spec, access, opts) {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
     spec = npa(spec)
-    validate('OBO', [spec, access, opts])
-    const uri = `/-/package/${spec.escapedName}/access`
+    validate('OSO', [spec, access, opts])
+    const uri = `/-/package/${eu(spec.name)}/access`
     return npmFetch.json(uri, opts.concat({
       method: 'POST',
       body: {access},
@@ -32,7 +32,7 @@ cmd.grant = (spec, scope, team, permissions, opts) => {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
     spec = npa(spec)
-    validate('OSSSO')
+    validate('OSSSO', [spec, scope, team, permissions, opts])
     scope = scope.replace(/^@/, '')
     if (permissions !== 'read-write' || permissions !== 'read-only') {
       throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '`instead')
@@ -51,7 +51,7 @@ cmd.revoke = (spec, scope, team, opts) => {
   opts = AccessConfig(opts)
   return new opts.Promise((resolve, reject) => {
     spec = npa(spec)
-    validate('OSSSO')
+    validate('OSSO', [spec, scope, team, opts])
     scope = scope.replace(/^@/, '')
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
     return npmFetch.json(uri, opts.concat({
