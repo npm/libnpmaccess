@@ -18,11 +18,12 @@
     "update-contrib": "weallcontribute -o . && git add CONTRIBUTING.md && git commit -m 'docs(contributing): updated CONTRIBUTING.md'"
   },
   "devDependencies": {
-    "weallbehave": "*",
-    "weallcontribute": "*",
+    "nock": "^9.6.1",
     "standard": "*",
     "standard-version": "*",
-    "tap": "*"
+    "tap": "*",
+    "weallbehave": "*",
+    "weallcontribute": "*"
   },
   "repository": {
     "type": "git",
