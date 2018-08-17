@@ -34,8 +34,8 @@ cmd.grant = (spec, scope, team, permissions, opts) => {
     spec = npa(spec)
     validate('OSSSO', [spec, scope, team, permissions, opts])
     scope = scope.replace(/^@/, '')
-    if (permissions !== 'read-write' || permissions !== 'read-only') {
-      throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '`instead')
+    if (permissions !== 'read-write' && permissions !== 'read-only') {
+      throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '` instead')
     }
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
     return npmFetch.json(uri, opts.concat({
