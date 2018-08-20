@@ -15,22 +15,18 @@ const OPTS = figgyPudding({})({
 test('access public', t => {
   tnock(t, REG).post(
     '/-/package/%40foo%2Fbar/access', {access: 'public'}
-  ).reply(
-    200, {accessChanged: true}
-  )
+  ).reply(200)
   return access.public('@foo/bar', OPTS).then(ret => {
-    t.deepEqual(ret, {accessChanged: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
 test('access restricted', t => {
   tnock(t, REG).post(
     '/-/package/%40foo%2Fbar/access', {access: 'restricted'}
-  ).reply(
-    200, {accessChanged: true}
-  )
+  ).reply(200)
   return access.restricted('@foo/bar', OPTS).then(ret => {
-    t.deepEqual(ret, {accessChanged: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
@@ -39,7 +35,7 @@ test('access 2fa-required', t => {
     publish_requires_tfa: true
   }).reply(200, {ok: true})
   return access.tfaRequired('@foo/bar', OPTS).then(ret => {
-    t.deepEqual(ret, {ok: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
@@ -48,7 +44,7 @@ test('access 2fa-not-required', t => {
     publish_requires_tfa: false
   }).reply(200, {ok: true})
   return access.tfaNotRequired('@foo/bar', OPTS).then(ret => {
-    t.deepEqual(ret, {ok: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
@@ -56,11 +52,11 @@ test('access grant basic read-write', t => {
   tnock(t, REG).put('/-/team/myorg/myteam/package', {
     package: '@foo/bar',
     permissions: 'read-write'
-  }).reply(201, {accessChanged: true})
+  }).reply(201)
   return access.grant(
     '@foo/bar', 'myorg', 'myteam', 'read-write', OPTS
   ).then(ret => {
-    t.deepEqual(ret, {accessChanged: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
@@ -68,11 +64,11 @@ test('access grant basic read-only', t => {
   tnock(t, REG).put('/-/team/myorg/myteam/package', {
     package: '@foo/bar',
     permissions: 'read-only'
-  }).reply(201, {accessChanged: true})
+  }).reply(201)
   return access.grant(
     '@foo/bar', 'myorg', 'myteam', 'read-only', OPTS
   ).then(ret => {
-    t.deepEqual(ret, {accessChanged: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
@@ -94,20 +90,20 @@ test('access grant basic unscoped', t => {
   tnock(t, REG).put('/-/team/myorg/myteam/package', {
     package: 'bar',
     permissions: 'read-write'
-  }).reply(201, {accessChanged: true})
+  }).reply(201)
   return access.grant(
     'bar', 'myorg', 'myteam', 'read-write', OPTS
   ).then(ret => {
-    t.deepEqual(ret, {accessChanged: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
 test('access revoke basic', t => {
   tnock(t, REG).delete('/-/team/myorg/myteam/package', {
     package: '@foo/bar'
-  }).reply(200, {accessChanged: true})
+  }).reply(200)
   return access.revoke('@foo/bar', 'myorg', 'myteam', OPTS).then(ret => {
-    t.deepEqual(ret, {accessChanged: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 
@@ -116,7 +112,7 @@ test('access revoke basic unscoped', t => {
     package: 'bar'
   }).reply(200, {accessChanged: true})
   return access.revoke('bar', 'myorg', 'myteam', OPTS).then(ret => {
-    t.deepEqual(ret, {accessChanged: true}, 'request succeeded')
+    t.deepEqual(ret, true, 'request succeeded')
   })
 })
 

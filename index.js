@@ -31,12 +31,12 @@ function setAccess (spec, access, opts) {
     spec = npar(spec)
     validate('OSO', [spec, access, opts])
     const uri = `/-/package/${eu(spec.name)}/access`
-    return npmFetch.json(uri, opts.concat({
+    return npmFetch(uri, opts.concat({
       method: 'POST',
       body: {access},
       spec
     })).then(resolve, reject)
-  })
+  }).then(res => res.body.resume() && true)
 }
 
 cmd.grant = (spec, scope, team, permissions, opts) => {
@@ -49,13 +49,13 @@ cmd.grant = (spec, scope, team, permissions, opts) => {
       throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '` instead')
     }
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
-    return npmFetch.json(uri, opts.concat({
+    return npmFetch(uri, opts.concat({
       method: 'PUT',
       body: {package: spec.name, permissions},
       scope,
       spec
     })).then(resolve, reject)
-  })
+  }).then(res => res.body.resume() && true)
 }
 
 cmd.revoke = (spec, scope, team, opts) => {
@@ -65,13 +65,13 @@ cmd.revoke = (spec, scope, team, opts) => {
     validate('OSSO', [spec, scope, team, opts])
     scope = scope.replace(/^@/, '')
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
-    return npmFetch.json(uri, opts.concat({
+    return npmFetch(uri, opts.concat({
       method: 'DELETE',
       body: {package: spec.name},
       scope,
       spec
     })).then(resolve, reject)
-  })
+  }).then(res => res.body.resume() && true)
 }
 
 cmd.lsPackages = (...args) => {
@@ -177,12 +177,12 @@ function setRequires2fa (spec, required, opts) {
     spec = npar(spec)
     validate('OBO', [spec, required, opts])
     const uri = `/-/package/${eu(spec.name)}/access`
-    return npmFetch.json(uri, opts.concat({
+    return npmFetch(uri, opts.concat({
       method: 'POST',
       body: {publish_requires_tfa: required},
       spec
     })).then(resolve, reject)
-  })
+  }).then(res => res.body.resume() && true)
 }
 
 cmd.edit = () => {
