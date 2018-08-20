@@ -201,7 +201,7 @@ The returned stream is a valid `asyncIterator`.
 ##### Example
 
 ```javascript
-for await (let [pkg, perm], value] of access.lsPackages.stream('zkat')) {
+for await (let [pkg, perm] of access.lsPackages.stream('zkat')) {
   console.log('zkat has', perm, 'access to', pkg)
 }
 // zkat has read-write access to eggplant
@@ -247,7 +247,7 @@ The returned stream is a valid `asyncIterator`.
 ##### Example
 
 ```javascript
-for await (let [usr, perm], value] of access.lsCollaborators.stream('npm')) {
+for await (let [usr, perm] of access.lsCollaborators.stream('npm')) {
   console.log(usr, 'has', perm, 'access to npm')
 }
 // zkat has read-write access to npm
