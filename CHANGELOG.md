@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/npm/libnpmaccess/compare/v1.1.0...v1.2.0) (2018-08-20)
+
+
+### Bug Fixes
+
+* **readme:** fix up appveyor badge url ([42b45a1](https://github.com/npm/libnpmaccess/commit/42b45a1))
+
+
+### Features
+
+* **streams:** add streaming result support for lsPkg and lsCollab ([0f06f46](https://github.com/npm/libnpmaccess/commit/0f06f46))
+
+
+
 <a name="1.1.0"></a>
 # [1.1.0](https://github.com/npm/libnpmaccess/compare/v1.0.0...v1.1.0) (2018-08-17)
 
