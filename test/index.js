@@ -1,6 +1,7 @@
 'use strict'
 
 const figgyPudding = require('figgy-pudding')
+const getStream = require('get-stream')
 const {test} = require('tap')
 const tnock = require('./util/tnock.js')
 
@@ -195,6 +196,27 @@ test('ls-packages bad response', t => {
   })
 })
 
+test('ls-packages stream', t => {
+  const serverPackages = {
+    '@foo/bar': 'write',
+    '@foo/util': 'read',
+    '@foo/other': 'shrödinger'
+  }
+  const clientPackages = [
+    ['@foo/bar', 'read-write'],
+    ['@foo/util', 'read-only'],
+    ['@foo/other', 'shrödinger']
+  ]
+  tnock(t, REG).get(
+    '/-/org/myorg/myteam/package?format=cli'
+  ).reply(200, serverPackages)
+  return getStream.array(
+    access.lsPackages.stream('myorg', 'myteam', OPTS)
+  ).then(data => {
+    t.deepEqual(data, clientPackages, 'got streamed client package info')
+  })
+})
+
 test('ls-collaborators', t => {
   const serverCollaborators = {
     'myorg:myteam': 'write',
@@ -210,6 +232,27 @@ test('ls-collaborators', t => {
     '/-/package/%40foo%2Fbar/collaborators?format=cli'
   ).reply(200, serverCollaborators)
   return access.lsCollaborators('@foo/bar', null, OPTS).then(data => {
+    t.deepEqual(data, clientCollaborators, 'got collaborators')
+  })
+})
+
+test('ls-collaborators stream', t => {
+  const serverCollaborators = {
+    'myorg:myteam': 'write',
+    'myorg:anotherteam': 'read',
+    'myorg:thirdteam': 'special-case'
+  }
+  const clientCollaborators = [
+    ['myorg:myteam', 'read-write'],
+    ['myorg:anotherteam', 'read-only'],
+    ['myorg:thirdteam', 'special-case']
+  ]
+  tnock(t, REG).get(
+    '/-/package/%40foo%2Fbar/collaborators?format=cli'
+  ).reply(200, serverCollaborators)
+  return getStream.array(
+    access.lsCollaborators.stream('@foo/bar', null, OPTS)
+  ).then(data => {
     t.deepEqual(data, clientCollaborators, 'got collaborators')
   })
 })

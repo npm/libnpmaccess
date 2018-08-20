@@ -1,8 +1,11 @@
 'use strict'
 
 const figgyPudding = require('figgy-pudding')
+const getStream = require('get-stream')
+const JSONStream = require('JSONStream')
 const npa = require('npm-package-arg')
 const npmFetch = require('npm-registry-fetch')
+const PassThrough = require('stream').PassThrough
 const validate = require('aproba')
 
 const AccessConfig = figgyPudding({
@@ -71,9 +74,30 @@ cmd.revoke = (spec, scope, team, opts) => {
   })
 }
 
-cmd.lsPackages = (scope, team, opts) => {
+cmd.lsPackages = (...args) => {
+  return getStream.array(
+    cmd.lsPackages.stream(...args)
+  ).then(data => data.reduce((acc, [key, val]) => {
+    if (!acc) {
+      acc = {}
+    }
+    acc[key] = val
+    return acc
+  }, null))
+}
+
+cmd.lsPackages.stream = (scope, team, opts) => {
   opts = AccessConfig(opts)
-  return new opts.Promise((resolve, reject) => {
+  const parser = JSONStream.parse('*', (value, [key]) => {
+    if (value === 'read') {
+      return [key, 'read-only']
+    } else if (value === 'write') {
+      return [key, 'read-write']
+    } else {
+      return [key, value]
+    }
+  })
+  new opts.Promise((resolve, reject) => {
     validate('SSO|SZO', [scope, team, opts])
     scope = scope.replace(/^@/, '')
     let uri
@@ -83,45 +107,66 @@ cmd.lsPackages = (scope, team, opts) => {
       uri = `/-/org/${eu(scope)}/package`
     }
     opts = opts.concat({query: {format: 'cli'}})
-    return npmFetch.json(uri, opts).catch(err => {
+    return npmFetch(uri, opts).catch(err => {
       if (err.code === 'E404' && !team) {
         uri = `/-/user/${eu(scope)}/package`
-        return npmFetch.json(uri, opts)
+        return npmFetch(uri, opts)
       } else {
         throw err
       }
-    }).then(translatePermissions).then(resolve, reject)
-  })
+    }).then(resolve, reject)
+  }).then(res => {
+    // NOTE: I couldn't figure out how to test the following, so meh
+    /* istanbul ignore next */
+    res.body.on('error', err => parser.emit('error', err))
+    return res.body.pipe(parser)
+  }, err => parser.emit('error', err))
+  const pt = new PassThrough({objectMode: true})
+  parser.on('error', err => pt.emit('error', err))
+  return parser.pipe(pt)
 }
 
-cmd.lsCollaborators = (spec, user, opts) => {
+cmd.lsCollaborators = (...args) => {
+  return getStream.array(
+    cmd.lsCollaborators.stream(...args)
+  ).then(data => data.reduce((acc, [key, val]) => {
+    if (!acc) {
+      acc = {}
+    }
+    acc[key] = val
+    return acc
+  }, null))
+}
+
+cmd.lsCollaborators.stream = (spec, user, opts) => {
   opts = AccessConfig(opts)
-  return new opts.Promise((resolve, reject) => {
+  const parser = JSONStream.parse('*', (value, [key]) => {
+    if (value === 'read') {
+      return [key, 'read-only']
+    } else if (value === 'write') {
+      return [key, 'read-write']
+    } else {
+      return [key, value]
+    }
+  })
+  new opts.Promise((resolve, reject) => {
     spec = npar(spec)
     validate('OSO|OZO', [spec, user, opts])
     const uri = `/-/package/${eu(spec.name)}/collaborators`
     const query = {format: 'cli'}
     if (user) { query.user = user }
-    return npmFetch.json(uri, opts.concat({
+    return npmFetch(uri, opts.concat({
       query
-    })).then(translatePermissions).then(resolve, reject)
-  })
-}
-
-function translatePermissions (perms) {
-  if (!perms) { return null }
-  const newPerms = {}
-  for (let key of Object.keys(perms)) {
-    const val = perms[key]
-    if (val === 'read') {
-      newPerms[key] = 'read-only'
-    } else if (val === 'write') {
-      newPerms[key] = 'read-write'
-    } else {
-      newPerms[key] = val
-    }
-  }
-  return newPerms
+    })).then(resolve, reject)
+  }).then(res => {
+    // NOTE: I couldn't figure out how to test the following, so meh
+    /* istanbul ignore next */
+    res.body.on('error', err => parser.emit('error', err))
+    return res.body.pipe(parser)
+  }, err => parser.emit('error', err))
+  const pt = new PassThrough({objectMode: true})
+  parser.on('error', err => pt.emit('error', err))
+  return parser.pipe(pt)
 }
 
 cmd.tfaRequired = (spec, opts) => setRequires2fa(spec, true, opts)
