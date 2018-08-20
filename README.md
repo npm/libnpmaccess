@@ -29,7 +29,9 @@ console.log(Object.keys(await access.lsPackages('zkat')))
   * [`tfaRequired()`](#tfa-required)
   * [`tfaNotRequired()`](#tfa-not-required)
   * [`lsPackages()`](#ls-packages)
+  * [`lsPackages.stream()`](#ls-packages-stream)
   * [`lsCollaborators()`](#ls-collaborators)
+  * [`lsCollaborators.stream()`](#ls-collaborators-stream)
 
 ### Install
 
@@ -171,6 +173,8 @@ Lists out packages a user, org, or team has access to, with corresponding
 permissions. Packages that the access token does not have access to won't be
 listed.
 
+For a streamed version of these results, see [`access.lsPackages.stream()`](#ls-package-stream).
+
 ##### Example
 
 ```javascript
@@ -179,6 +183,29 @@ await access.lsPackages('zkat', null, {
 })
 // Lists all packages `@zkat` has access to on the registry, and the
 // corresponding permissions.
+```
+
+#### <a name="ls-packages-stream"></a> `> access.lsPackages.stream(scope, [team], [opts]) -> Stream`
+
+`scope` must be a valid org or user name, with or without the `@` prefix. `team`
+is optional and, if provided, must be a valid team within that scope. `team`
+must be `null` in order to pass in `opts`.
+
+Streams out packages a user, org, or team has access to, with corresponding
+permissions, with each stream entry being formatted like `[packageName,
+permissions]`. Packages that the access token does not have access to won't be
+listed.
+
+The returned stream is a valid `asyncIterator`.
+
+##### Example
+
+```javascript
+for await (let [pkg, perm], value] of access.lsPackages.stream('zkat')) {
+  console.log('zkat has', perm, 'access to', pkg)
+}
+// zkat has read-write access to eggplant
+// zkat has read-only access to @npmcorp/secret
 ```
 
 #### <a name="ls-collaborators"></a> `> access.lsCollaborators(spec, [user], [opts]) -> Promise`
@@ -192,6 +219,8 @@ Lists out access privileges for a certain package. Will only show permissions
 for packages to which you have at least read access. If `user` is passed in, the
 list is filtered only to teams _that_ user happens to belong to.
 
+For a streamed version of these results, see [`access.lsCollaborators.stream()`](#ls-collaborators-stream).
+
 ##### Example
 
 ```javascript
@@ -199,4 +228,28 @@ await access.lsCollaborators('@npm/foo', 'zkat', {
   token: 'myregistrytoken'
 })
 // Lists all teams with access to @npm/foo that @zkat belongs to.
+```
+
+#### <a name="ls-collaborators-stream"></a> `> access.lsCollaborators.stream(spec, [user], [opts]) -> Stream`
+
+`spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
+registry spec. `scope` must be a valid org or user name, with or without the `@`
+prefix. `team` is optional and, if provided, must be a valid team within that
+scope. `team` must be `null` in order to pass in `opts`.
+
+Stream out access privileges for a certain package, with each entry in `[user,
+permissions]` format. Will only show permissions for packages to which you have
+at least read access. If `user` is passed in, the list is filtered only to teams
+_that_ user happens to belong to.
+
+The returned stream is a valid `asyncIterator`.
+
+##### Example
+
+```javascript
+for await (let [usr, perm], value] of access.lsCollaborators.stream('npm')) {
+  console.log(usr, 'has', perm, 'access to npm')
+}
+// zkat has read-write access to npm
+// iarna has read-write access to npm
 ```
