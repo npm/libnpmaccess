@@ -128,7 +128,7 @@ test('ls-packages on team', t => {
     '@foo/other': 'shrödinger'
   }
   tnock(t, REG).get(
-    '/-/org/myorg/myteam/package?format=cli'
+    '/-/team/myorg/myteam/package?format=cli'
   ).reply(200, serverPackages)
   return access.lsPackages('myorg', 'myteam', OPTS).then(data => {
     t.deepEqual(data, clientPackages, 'got client package info')
@@ -174,7 +174,7 @@ test('ls-packages on user', t => {
 })
 
 test('ls-packages error on team', t => {
-  tnock(t, REG).get('/-/org/myorg/myteam/package?format=cli').reply(404)
+  tnock(t, REG).get('/-/team/myorg/myteam/package?format=cli').reply(404)
   return access.lsPackages(
     'myorg', 'myteam', OPTS
   ).then(
@@ -185,7 +185,7 @@ test('ls-packages error on team', t => {
 
 test('ls-packages bad response', t => {
   tnock(t, REG).get(
-    '/-/org/myorg/myteam/package?format=cli'
+    '/-/team/myorg/myteam/package?format=cli'
   ).reply(200, JSON.stringify(null))
   return access.lsPackages('myorg', 'myteam', OPTS).then(data => {
     t.deepEqual(data, null, 'succeeds with null')
@@ -204,7 +204,7 @@ test('ls-packages stream', t => {
     ['@foo/other', 'shrödinger']
   ]
   tnock(t, REG).get(
-    '/-/org/myorg/myteam/package?format=cli'
+    '/-/team/myorg/myteam/package?format=cli'
   ).reply(200, serverPackages)
   return getStream.array(
     access.lsPackages.stream('myorg', 'myteam', OPTS)

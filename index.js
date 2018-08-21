@@ -102,7 +102,7 @@ cmd.lsPackages.stream = (scope, team, opts) => {
     scope = scope.replace(/^@/, '')
     let uri
     if (team) {
-      uri = `/-/org/${eu(scope)}/${eu(team)}/package`
+      uri = `/-/team/${eu(scope)}/${eu(team)}/package`
     } else {
       uri = `/-/org/${eu(scope)}/package`
     }
