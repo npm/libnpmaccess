@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/npm/libnpmaccess/compare/v1.2.2...v2.0.0) (2018-08-21)
+
+
+### Bug Fixes
+
+* **json:** stop trying to parse response JSON ([20fdd84](https://github.com/npm/libnpmaccess/commit/20fdd84))
+* **lsPackages:** team URL was wrong D: ([b52201c](https://github.com/npm/libnpmaccess/commit/b52201c))
+
+
+### BREAKING CHANGES
+
+* **json:** use cases where registries were returning JSON
+strings in the response body will no longer have an effect. All
+API functions except for lsPackages and lsCollaborators will return
+`true` on completion.
+
+
+
 <a name="1.2.2"></a>
 ## [1.2.2](https://github.com/npm/libnpmaccess/compare/v1.2.1...v1.2.2) (2018-08-20)
 
