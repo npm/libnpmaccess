@@ -183,6 +183,16 @@ test('ls-packages error on team', t => {
   )
 })
 
+test('ls-packages error on user', t => {
+  const srv = tnock(t, REG)
+  srv.get('/-/org/myuser/package?format=cli').reply(404, {error: 'not found'})
+  srv.get('/-/user/myuser/package?format=cli').reply(404, {error: 'not found'})
+  return access.lsPackages('myuser', null, OPTS).then(
+    () => { throw new Error('should not have succeeded') },
+    err => t.equal(err.code, 'E404', 'spit out 404 if both reqs fail')
+  )
+})
+
 test('ls-packages bad response', t => {
   tnock(t, REG).get(
     '/-/team/myorg/myteam/package?format=cli'

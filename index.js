@@ -2,10 +2,9 @@
 
 const figgyPudding = require('figgy-pudding')
 const getStream = require('get-stream')
-const JSONStream = require('JSONStream')
 const npa = require('npm-package-arg')
 const npmFetch = require('npm-registry-fetch')
-const PassThrough = require('stream').PassThrough
+const {PassThrough} = require('stream')
 const validate = require('aproba')
 
 const AccessConfig = figgyPudding({
@@ -74,99 +73,89 @@ cmd.revoke = (spec, scope, team, opts) => {
   }).then(res => res.body.resume() && true)
 }
 
-cmd.lsPackages = (...args) => {
-  return getStream.array(
-    cmd.lsPackages.stream(...args)
-  ).then(data => data.reduce((acc, [key, val]) => {
-    if (!acc) {
-      acc = {}
-    }
-    acc[key] = val
-    return acc
-  }, null))
+cmd.lsPackages = (scope, team, opts) => {
+  opts = AccessConfig(opts)
+  return new opts.Promise((resolve, reject) => {
+    return getStream.array(
+      cmd.lsPackages.stream(scope, team, opts)
+    ).then(data => data.reduce((acc, [key, val]) => {
+      if (!acc) {
+        acc = {}
+      }
+      acc[key] = val
+      return acc
+    }, null)).then(resolve, reject)
+  })
 }
 
 cmd.lsPackages.stream = (scope, team, opts) => {
   opts = AccessConfig(opts)
-  const parser = JSONStream.parse('*', (value, [key]) => {
-    if (value === 'read') {
-      return [key, 'read-only']
-    } else if (value === 'write') {
-      return [key, 'read-write']
-    } else {
-      return [key, value]
+  validate('SSO|SZO', [scope, team, opts])
+  scope = scope.replace(/^@/, '')
+  let uri
+  if (team) {
+    uri = `/-/team/${eu(scope)}/${eu(team)}/package`
+  } else {
+    uri = `/-/org/${eu(scope)}/package`
+  }
+  opts = opts.concat({
+    query: {format: 'cli'},
+    mapJson (value, [key]) {
+      if (value === 'read') {
+        return [key, 'read-only']
+      } else if (value === 'write') {
+        return [key, 'read-write']
+      } else {
+        return [key, value]
+      }
     }
   })
-  new opts.Promise((resolve, reject) => {
-    validate('SSO|SZO', [scope, team, opts])
-    scope = scope.replace(/^@/, '')
-    let uri
-    if (team) {
-      uri = `/-/team/${eu(scope)}/${eu(team)}/package`
+  const ret = new PassThrough({objectMode: true})
+  npmFetch.json.stream(uri, '*', opts).on('error', err => {
+    if (err.code === 'E404' && !team) {
+      uri = `/-/user/${eu(scope)}/package`
+      npmFetch.json.stream(uri, '*', opts).on(
+        'error', err => ret.emit('error', err)
+      ).pipe(ret)
     } else {
-      uri = `/-/org/${eu(scope)}/package`
+      ret.emit('error', err)
     }
-    opts = opts.concat({query: {format: 'cli'}})
-    return npmFetch(uri, opts).catch(err => {
-      if (err.code === 'E404' && !team) {
-        uri = `/-/user/${eu(scope)}/package`
-        return npmFetch(uri, opts)
-      } else {
-        throw err
-      }
-    }).then(resolve, reject)
-  }).then(res => {
-    // NOTE: I couldn't figure out how to test the following, so meh
-    /* istanbul ignore next */
-    res.body.on('error', err => parser.emit('error', err))
-    return res.body.pipe(parser)
-  }, err => parser.emit('error', err))
-  const pt = new PassThrough({objectMode: true})
-  parser.on('error', err => pt.emit('error', err))
-  return parser.pipe(pt)
+  }).pipe(ret)
+  return ret
 }
 
-cmd.lsCollaborators = (...args) => {
-  return getStream.array(
-    cmd.lsCollaborators.stream(...args)
-  ).then(data => data.reduce((acc, [key, val]) => {
-    if (!acc) {
-      acc = {}
-    }
-    acc[key] = val
-    return acc
-  }, null))
+cmd.lsCollaborators = (spec, user, opts) => {
+  opts = AccessConfig(opts)
+  return new opts.Promise((resolve, reject) => {
+    return getStream.array(
+      cmd.lsCollaborators.stream(spec, user, opts)
+    ).then(data => data.reduce((acc, [key, val]) => {
+      if (!acc) {
+        acc = {}
+      }
+      acc[key] = val
+      return acc
+    }, null)).then(resolve, reject)
+  })
 }
 
 cmd.lsCollaborators.stream = (spec, user, opts) => {
   opts = AccessConfig(opts)
-  const parser = JSONStream.parse('*', (value, [key]) => {
-    if (value === 'read') {
-      return [key, 'read-only']
-    } else if (value === 'write') {
-      return [key, 'read-write']
-    } else {
-      return [key, value]
+  spec = npar(spec)
+  validate('OSO|OZO', [spec, user, opts])
+  const uri = `/-/package/${eu(spec.name)}/collaborators`
+  return npmFetch.json.stream(uri, '*', opts.concat({
+    query: {format: 'cli', user: user || undefined},
+    mapJson (value, [key]) {
+      if (value === 'read') {
+        return [key, 'read-only']
+      } else if (value === 'write') {
+        return [key, 'read-write']
+      } else {
+        return [key, value]
+      }
     }
-  })
-  new opts.Promise((resolve, reject) => {
-    spec = npar(spec)
-    validate('OSO|OZO', [spec, user, opts])
-    const uri = `/-/package/${eu(spec.name)}/collaborators`
-    const query = {format: 'cli'}
-    if (user) { query.user = user }
-    return npmFetch(uri, opts.concat({
-      query
-    })).then(resolve, reject)
-  }).then(res => {
-    // NOTE: I couldn't figure out how to test the following, so meh
-    /* istanbul ignore next */
-    res.body.on('error', err => parser.emit('error', err))
-    return res.body.pipe(parser)
-  }, err => parser.emit('error', err))
-  const pt = new PassThrough({objectMode: true})
-  parser.on('error', err => pt.emit('error', err))
-  return parser.pipe(pt)
+  }))
 }
 
 cmd.tfaRequired = (spec, opts) => setRequires2fa(spec, true, opts)
