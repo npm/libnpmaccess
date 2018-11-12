@@ -1,6 +1,6 @@
 {
   "name": "libnpmaccess",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "programmatic library for `npm access` commands",
   "author": {
     "name": "Kat Marchán",
