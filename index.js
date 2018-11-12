@@ -91,9 +91,9 @@ cmd.lsPackages = (entity, opts) => {
 }
 
 cmd.lsPackages.stream = (entity, opts) => {
+  validate('SO|SZ', [entity, opts])
   opts = AccessConfig(opts)
   const {scope, team} = splitEntity(entity)
-  validate('SSO|SZO', [scope, team, opts])
   let uri
   if (team) {
     uri = `/-/team/${eu(scope)}/${eu(team)}/package`
