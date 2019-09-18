@@ -2,7 +2,7 @@
 
 const figgyPudding = require('figgy-pudding')
 const getStream = require('get-stream')
-const {test} = require('tap')
+const { test } = require('tap')
 const tnock = require('./util/tnock.js')
 
 const access = require('../index.js')
@@ -14,7 +14,7 @@ const OPTS = figgyPudding({})({
 
 test('access public', t => {
   tnock(t, REG).post(
-    '/-/package/%40foo%2Fbar/access', {access: 'public'}
+    '/-/package/%40foo%2Fbar/access', { access: 'public' }
   ).reply(200)
   return access.public('@foo/bar', OPTS).then(ret => {
     t.deepEqual(ret, true, 'request succeeded')
@@ -23,7 +23,7 @@ test('access public', t => {
 
 test('access restricted', t => {
   tnock(t, REG).post(
-    '/-/package/%40foo%2Fbar/access', {access: 'restricted'}
+    '/-/package/%40foo%2Fbar/access', { access: 'restricted' }
   ).reply(200)
   return access.restricted('@foo/bar', OPTS).then(ret => {
     t.deepEqual(ret, true, 'request succeeded')
@@ -33,7 +33,7 @@ test('access restricted', t => {
 test('access 2fa-required', t => {
   tnock(t, REG).post('/-/package/%40foo%2Fbar/access', {
     publish_requires_tfa: true
-  }).reply(200, {ok: true})
+  }).reply(200, { ok: true })
   return access.tfaRequired('@foo/bar', OPTS).then(ret => {
     t.deepEqual(ret, true, 'request succeeded')
   })
@@ -42,7 +42,7 @@ test('access 2fa-required', t => {
 test('access 2fa-not-required', t => {
   tnock(t, REG).post('/-/package/%40foo%2Fbar/access', {
     publish_requires_tfa: false
-  }).reply(200, {ok: true})
+  }).reply(200, { ok: true })
   return access.tfaNotRequired('@foo/bar', OPTS).then(ret => {
     t.deepEqual(ret, true, 'request succeeded')
   })
@@ -124,7 +124,7 @@ test('access revoke basic', t => {
 test('access revoke basic unscoped', t => {
   tnock(t, REG).delete('/-/team/myorg/myteam/package', {
     package: 'bar'
-  }).reply(200, {accessChanged: true})
+  }).reply(200, { accessChanged: true })
   return access.revoke('bar', 'myorg:myteam', OPTS).then(ret => {
     t.deepEqual(ret, true, 'request succeeded')
   })
@@ -180,7 +180,7 @@ test('ls-packages on user', t => {
     '@foo/other': 'shrödinger'
   }
   const srv = tnock(t, REG)
-  srv.get('/-/org/myuser/package?format=cli').reply(404, {error: 'not found'})
+  srv.get('/-/org/myuser/package?format=cli').reply(404, { error: 'not found' })
   srv.get('/-/user/myuser/package?format=cli').reply(200, serverPackages)
   return access.lsPackages('myuser', OPTS).then(data => {
     t.deepEqual(data, clientPackages, 'got client package info')
@@ -197,8 +197,8 @@ test('ls-packages error on team', t => {
 
 test('ls-packages error on user', t => {
   const srv = tnock(t, REG)
-  srv.get('/-/org/myuser/package?format=cli').reply(404, {error: 'not found'})
-  srv.get('/-/user/myuser/package?format=cli').reply(404, {error: 'not found'})
+  srv.get('/-/org/myuser/package?format=cli').reply(404, { error: 'not found' })
+  srv.get('/-/user/myuser/package?format=cli').reply(404, { error: 'not found' })
   return access.lsPackages('myuser', OPTS).then(
     () => { throw new Error('should not have succeeded') },
     err => t.equal(err.code, 'E404', 'spit out 404 if both reqs fail')

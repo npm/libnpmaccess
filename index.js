@@ -4,11 +4,11 @@ const figgyPudding = require('figgy-pudding')
 const getStream = require('get-stream')
 const npa = require('npm-package-arg')
 const npmFetch = require('npm-registry-fetch')
-const {PassThrough} = require('stream')
+const { PassThrough } = require('stream')
 const validate = require('aproba')
 
 const AccessConfig = figgyPudding({
-  Promise: {default: () => Promise}
+  Promise: { default: () => Promise }
 })
 
 const eu = encodeURIComponent
@@ -32,7 +32,7 @@ function setAccess (spec, access, opts) {
     const uri = `/-/package/${eu(spec.name)}/access`
     return npmFetch(uri, opts.concat({
       method: 'POST',
-      body: {access},
+      body: { access },
       spec
     }))
   }).then(res => res.body.resume() && true)
@@ -42,7 +42,7 @@ cmd.grant = (spec, entity, permissions, opts) => {
   opts = AccessConfig(opts)
   return pwrap(opts, () => {
     spec = npar(spec)
-    const {scope, team} = splitEntity(entity)
+    const { scope, team } = splitEntity(entity)
     validate('OSSSO', [spec, scope, team, permissions, opts])
     if (permissions !== 'read-write' && permissions !== 'read-only') {
       throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '` instead')
@@ -50,7 +50,7 @@ cmd.grant = (spec, entity, permissions, opts) => {
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
     return npmFetch(uri, opts.concat({
       method: 'PUT',
-      body: {package: spec.name, permissions},
+      body: { package: spec.name, permissions },
       scope,
       spec,
       ignoreBody: true
@@ -62,12 +62,12 @@ cmd.revoke = (spec, entity, opts) => {
   opts = AccessConfig(opts)
   return pwrap(opts, () => {
     spec = npar(spec)
-    const {scope, team} = splitEntity(entity)
+    const { scope, team } = splitEntity(entity)
     validate('OSSO', [spec, scope, team, opts])
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
     return npmFetch(uri, opts.concat({
       method: 'DELETE',
-      body: {package: spec.name},
+      body: { package: spec.name },
       scope,
       spec,
       ignoreBody: true
@@ -93,7 +93,7 @@ cmd.lsPackages = (entity, opts) => {
 cmd.lsPackages.stream = (entity, opts) => {
   validate('SO|SZ', [entity, opts])
   opts = AccessConfig(opts)
-  const {scope, team} = splitEntity(entity)
+  const { scope, team } = splitEntity(entity)
   let uri
   if (team) {
     uri = `/-/team/${eu(scope)}/${eu(team)}/package`
@@ -101,7 +101,7 @@ cmd.lsPackages.stream = (entity, opts) => {
     uri = `/-/org/${eu(scope)}/package`
   }
   opts = opts.concat({
-    query: {format: 'cli'},
+    query: { format: 'cli' },
     mapJson (value, [key]) {
       if (value === 'read') {
         return [key, 'read-only']
@@ -112,7 +112,7 @@ cmd.lsPackages.stream = (entity, opts) => {
       }
     }
   })
-  const ret = new PassThrough({objectMode: true})
+  const ret = new PassThrough({ objectMode: true })
   npmFetch.json.stream(uri, '*', opts).on('error', err => {
     if (err.code === 'E404' && !team) {
       uri = `/-/user/${eu(scope)}/package`
@@ -155,7 +155,7 @@ cmd.lsCollaborators.stream = (spec, user, opts) => {
   validate('OSO|OZO', [spec, user, opts])
   const uri = `/-/package/${eu(spec.name)}/collaborators`
   return npmFetch.json.stream(uri, '*', opts.concat({
-    query: {format: 'cli', user: user || undefined},
+    query: { format: 'cli', user: user || undefined },
     mapJson (value, [key]) {
       if (value === 'read') {
         return [key, 'read-only']
@@ -178,7 +178,7 @@ function setRequires2fa (spec, required, opts) {
     const uri = `/-/package/${eu(spec.name)}/access`
     return npmFetch(uri, opts.concat({
       method: 'POST',
-      body: {publish_requires_tfa: required},
+      body: { publish_requires_tfa: required },
       spec,
       ignoreBody: true
     })).then(resolve, reject)
@@ -190,8 +190,8 @@ cmd.edit = () => {
 }
 
 function splitEntity (entity = '') {
-  let [, scope, team] = entity.match(/^@?([^:]+)(?::(.*))?$/) || []
-  return {scope, team}
+  const [, scope, team] = entity.match(/^@?([^:]+)(?::(.*))?$/) || []
+  return { scope, team }
 }
 
 function pwrap (opts, fn) {
