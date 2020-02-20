@@ -1,15 +1,10 @@
 'use strict'
 
-const figgyPudding = require('figgy-pudding')
 const getStream = require('get-stream')
 const npa = require('npm-package-arg')
 const npmFetch = require('npm-registry-fetch')
 const { PassThrough } = require('stream')
 const validate = require('aproba')
-
-const AccessConfig = figgyPudding({
-  Promise: { default: () => Promise }
-})
 
 const eu = encodeURIComponent
 const npar = spec => {
@@ -19,27 +14,35 @@ const npar = spec => {
   }
   return spec
 }
+const mapJson = (value, [key]) => {
+  if (value === 'read') {
+    return [key, 'read-only']
+  } else if (value === 'write') {
+    return [key, 'read-write']
+  } else {
+    return [key, value]
+  }
+}
 
 const cmd = module.exports = {}
 
 cmd.public = (spec, opts) => setAccess(spec, 'public', opts)
 cmd.restricted = (spec, opts) => setAccess(spec, 'restricted', opts)
 function setAccess (spec, access, opts) {
-  opts = AccessConfig(opts)
   return pwrap(opts, () => {
     spec = npar(spec)
     validate('OSO', [spec, access, opts])
     const uri = `/-/package/${eu(spec.name)}/access`
-    return npmFetch(uri, opts.concat({
+    return npmFetch(uri, {
+      ...opts,
       method: 'POST',
       body: { access },
       spec
-    }))
+    })
   }).then(res => res.body.resume() && true)
 }
 
 cmd.grant = (spec, entity, permissions, opts) => {
-  opts = AccessConfig(opts)
   return pwrap(opts, () => {
     spec = npar(spec)
     const { scope, team } = splitEntity(entity)
@@ -48,35 +51,35 @@ cmd.grant = (spec, entity, permissions, opts) => {
       throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '` instead')
     }
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
-    return npmFetch(uri, opts.concat({
+    return npmFetch(uri, {
+      ...opts,
       method: 'PUT',
       body: { package: spec.name, permissions },
       scope,
       spec,
       ignoreBody: true
-    }))
+    })
   }).then(() => true)
 }
 
 cmd.revoke = (spec, entity, opts) => {
-  opts = AccessConfig(opts)
   return pwrap(opts, () => {
     spec = npar(spec)
     const { scope, team } = splitEntity(entity)
     validate('OSSO', [spec, scope, team, opts])
     const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
-    return npmFetch(uri, opts.concat({
+    return npmFetch(uri, {
+      ...opts,
       method: 'DELETE',
       body: { package: spec.name },
       scope,
       spec,
       ignoreBody: true
-    }))
+    })
   }).then(() => true)
 }
 
 cmd.lsPackages = (entity, opts) => {
-  opts = AccessConfig(opts)
   return pwrap(opts, () => {
     return getStream.array(
       cmd.lsPackages.stream(entity, opts)
@@ -92,7 +95,6 @@ cmd.lsPackages = (entity, opts) => {
 
 cmd.lsPackages.stream = (entity, opts) => {
   validate('SO|SZ', [entity, opts])
-  opts = AccessConfig(opts)
   const { scope, team } = splitEntity(entity)
   let uri
   if (team) {
@@ -100,18 +102,8 @@ cmd.lsPackages.stream = (entity, opts) => {
   } else {
     uri = `/-/org/${eu(scope)}/package`
   }
-  opts = opts.concat({
-    query: { format: 'cli' },
-    mapJson (value, [key]) {
-      if (value === 'read') {
-        return [key, 'read-only']
-      } else if (value === 'write') {
-        return [key, 'read-write']
-      } else {
-        return [key, value]
-      }
-    }
-  })
+  opts.query = { format: 'cli' }
+  opts.mapJson = mapJson
   const ret = new PassThrough({ objectMode: true })
   npmFetch.json.stream(uri, '*', opts).on('error', err => {
     if (err.code === 'E404' && !team) {
@@ -131,7 +123,6 @@ cmd.lsCollaborators = (spec, user, opts) => {
     opts = user
     user = undefined
   }
-  opts = AccessConfig(opts)
   return pwrap(opts, () => {
     return getStream.array(
       cmd.lsCollaborators.stream(spec, user, opts)
@@ -150,38 +141,28 @@ cmd.lsCollaborators.stream = (spec, user, opts) => {
     opts = user
     user = undefined
   }
-  opts = AccessConfig(opts)
   spec = npar(spec)
   validate('OSO|OZO', [spec, user, opts])
   const uri = `/-/package/${eu(spec.name)}/collaborators`
-  return npmFetch.json.stream(uri, '*', opts.concat({
-    query: { format: 'cli', user: user || undefined },
-    mapJson (value, [key]) {
-      if (value === 'read') {
-        return [key, 'read-only']
-      } else if (value === 'write') {
-        return [key, 'read-write']
-      } else {
-        return [key, value]
-      }
-    }
-  }))
+  opts.query = { format: 'cli', user: user || undefined }
+  opts.mapJson = mapJson
+  return npmFetch.json.stream(uri, '*', opts)
 }
 
 cmd.tfaRequired = (spec, opts) => setRequires2fa(spec, true, opts)
 cmd.tfaNotRequired = (spec, opts) => setRequires2fa(spec, false, opts)
 function setRequires2fa (spec, required, opts) {
-  opts = AccessConfig(opts)
-  return new opts.Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     spec = npar(spec)
     validate('OBO', [spec, required, opts])
     const uri = `/-/package/${eu(spec.name)}/access`
-    return npmFetch(uri, opts.concat({
+    return npmFetch(uri, {
+      ...opts,
       method: 'POST',
       body: { publish_requires_tfa: required },
       spec,
       ignoreBody: true
-    })).then(resolve, reject)
+    }).then(resolve, reject)
   }).then(() => true)
 }
 
@@ -195,7 +176,7 @@ function splitEntity (entity = '') {
 }
 
 function pwrap (opts, fn) {
-  return new opts.Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     fn().then(resolve, reject)
   })
 }

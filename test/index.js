@@ -1,6 +1,5 @@
 'use strict'
 
-const figgyPudding = require('figgy-pudding')
 const getStream = require('get-stream')
 const { test } = require('tap')
 const tnock = require('./util/tnock.js')
@@ -8,9 +7,9 @@ const tnock = require('./util/tnock.js')
 const access = require('../index.js')
 
 const REG = 'http://localhost:1337'
-const OPTS = figgyPudding({})({
+const OPTS = {
   registry: REG
-})
+}
 
 test('access public', t => {
   tnock(t, REG).post(
