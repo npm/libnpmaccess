@@ -15,7 +15,7 @@
     "nock": "^9.6.1",
     "standard": "^14.3.0",
     "standard-version": "^7.0.0",
-    "tap": "^12.7.0"
+    "tap": "^14.10.6"
   },
   "repository": {
     "type": "git",
