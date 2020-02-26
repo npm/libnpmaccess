@@ -38,7 +38,7 @@ function setAccess (spec, access, opts) {
       body: { access },
       spec
     })
-  }).then(res => res.body.resume() && true)
+  }).then(res => true)
 }
 
 cmd.grant = (spec, entity, permissions, opts) => {
