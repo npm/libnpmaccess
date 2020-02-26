@@ -1,7 +1,7 @@
 'use strict'
 
 const t = require('tap')
-const tnock = require('./util/tnock.js')
+const tnock = require('./fixtures/tnock.js')
 
 const access = require('../index.js')
 
