@@ -1,6 +1,5 @@
 'use strict'
 
-const getStream = require('get-stream')
 const { test } = require('tap')
 const tnock = require('./util/tnock.js')
 
@@ -227,11 +226,11 @@ test('ls-packages stream', t => {
   tnock(t, REG).get(
     '/-/team/myorg/myteam/package?format=cli'
   ).reply(200, serverPackages)
-  return getStream.array(
-    access.lsPackages.stream('myorg:myteam', OPTS)
-  ).then(data => {
-    t.deepEqual(data, clientPackages, 'got streamed client package info')
-  })
+  return access.lsPackages.stream('myorg:myteam', OPTS)
+    .collect()
+    .then(data => {
+      t.deepEqual(data, clientPackages, 'got streamed client package info')
+    })
 })
 
 test('ls-collaborators', t => {
@@ -267,11 +266,11 @@ test('ls-collaborators stream', t => {
   tnock(t, REG).get(
     '/-/package/%40foo%2Fbar/collaborators?format=cli'
   ).reply(200, serverCollaborators)
-  return getStream.array(
-    access.lsCollaborators.stream('@foo/bar', OPTS)
-  ).then(data => {
-    t.deepEqual(data, clientCollaborators, 'got collaborators')
-  })
+  return access.lsCollaborators.stream('@foo/bar', OPTS)
+    .collect()
+    .then(data => {
+      t.deepEqual(data, clientCollaborators, 'got collaborators')
+    })
 })
 
 test('ls-collaborators w/scope', t => {

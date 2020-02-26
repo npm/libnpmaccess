@@ -1,9 +1,8 @@
 'use strict'
 
-const getStream = require('get-stream')
+const Minipass = require('minipass')
 const npa = require('npm-package-arg')
 const npmFetch = require('npm-registry-fetch')
-const { PassThrough } = require('stream')
 const validate = require('aproba')
 
 const eu = encodeURIComponent
@@ -81,15 +80,17 @@ cmd.revoke = (spec, entity, opts) => {
 
 cmd.lsPackages = (entity, opts) => {
   return pwrap(opts, () => {
-    return getStream.array(
-      cmd.lsPackages.stream(entity, opts)
-    ).then(data => data.reduce((acc, [key, val]) => {
-      if (!acc) {
-        acc = {}
-      }
-      acc[key] = val
-      return acc
-    }, null))
+    return cmd.lsPackages.stream(entity, opts)
+      .collect()
+      .then(data => {
+        return data.reduce((acc, [key, val]) => {
+          if (!acc) {
+            acc = {}
+          }
+          acc[key] = val
+          return acc
+        }, null)
+      })
   })
 }
 
@@ -104,7 +105,7 @@ cmd.lsPackages.stream = (entity, opts) => {
   }
   opts.query = { format: 'cli' }
   opts.mapJSON = mapJSON
-  const ret = new PassThrough({ objectMode: true })
+  const ret = new Minipass({ objectMode: true })
   npmFetch.json.stream(uri, '*', opts).on('error', err => {
     if (err.code === 'E404' && !team) {
       uri = `/-/user/${eu(scope)}/package`
@@ -124,15 +125,17 @@ cmd.lsCollaborators = (spec, user, opts) => {
     user = undefined
   }
   return pwrap(opts, () => {
-    return getStream.array(
-      cmd.lsCollaborators.stream(spec, user, opts)
-    ).then(data => data.reduce((acc, [key, val]) => {
-      if (!acc) {
-        acc = {}
-      }
-      acc[key] = val
-      return acc
-    }, null))
+    return cmd.lsCollaborators.stream(spec, user, opts)
+      .collect()
+      .then(data => {
+        return data.reduce((acc, [key, val]) => {
+          if (!acc) {
+            acc = {}
+          }
+          acc[key] = val
+          return acc
+        }, null)
+      })
   })
 }
 
