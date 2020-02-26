@@ -42,23 +42,6 @@ console.log(Object.keys(await access.lsPackages('zkat')))
 
 `$ npm install libnpmaccess`
 
-### Contributing
-
-The npm team enthusiastically welcomes contributions and project participation!
-There's a bunch of things you can do if you want to contribute! The
-[Contributor Guide](https://github.com/npm/cli/blob/latest/CONTRIBUTING.md)
-outlines the process for community interaction and contribution. Please don't
-hesitate to jump in if you'd like to, or even ask us questions if something
-isn't clear.
-
-All participants and maintainers in this project are expected to follow the
-[npm Code of Conduct](https://www.npmjs.com/policies/conduct), and just
-generally be excellent to each other.
-
-Please refer to the [Changelog](CHANGELOG.md) for project history details, too.
-
-Happy hacking!
-
 ### API
 
 #### <a name="opts"></a> `opts` for `libnpmaccess` commands
