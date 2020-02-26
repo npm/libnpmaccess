@@ -398,7 +398,7 @@ t.test('error on non-registry specs', t => {
     err.message, /spec.*must be a registry spec/, 'registry spec required'
   )
   return Promise.all([
-    access.public('foo/bar').then(resolve, reject),
+    access.public('githubusername/reponame').then(resolve, reject),
     access.restricted('foo/bar').then(resolve, reject),
     access.grant('foo/bar', 'myorg', 'myteam', 'read-only').then(resolve, reject),
     access.revoke('foo/bar', 'myorg', 'myteam').then(resolve, reject),
