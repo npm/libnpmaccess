@@ -14,7 +14,7 @@ const npar = spec => {
   }
   return spec
 }
-const mapJson = (value, [key]) => {
+const mapJSON = (value, [key]) => {
   if (value === 'read') {
     return [key, 'read-only']
   } else if (value === 'write') {
@@ -103,7 +103,7 @@ cmd.lsPackages.stream = (entity, opts) => {
     uri = `/-/org/${eu(scope)}/package`
   }
   opts.query = { format: 'cli' }
-  opts.mapJson = mapJson
+  opts.mapJSON = mapJSON
   const ret = new PassThrough({ objectMode: true })
   npmFetch.json.stream(uri, '*', opts).on('error', err => {
     if (err.code === 'E404' && !team) {
@@ -145,7 +145,7 @@ cmd.lsCollaborators.stream = (spec, user, opts) => {
   validate('OSO|OZO', [spec, user, opts])
   const uri = `/-/package/${eu(spec.name)}/collaborators`
   opts.query = { format: 'cli', user: user || undefined }
-  opts.mapJson = mapJson
+  opts.mapJSON = mapJSON
   return npmFetch.json.stream(uri, '*', opts)
 }
 
