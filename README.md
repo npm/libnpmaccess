@@ -57,7 +57,7 @@ A couple of options of note for those in a hurry:
 * `opts.token` - can be passed in and will be used as the authentication token for the registry. For other ways to pass in auth details, see the n-r-f docs.
 * `opts.otp` - certain operations will require an OTP token to be passed in. If a `libnpmaccess` command fails with `err.code === EOTP`, please retry the request with `{otp: <2fa token>}`
 
-#### <a name="public"></a> `> access.public(spec, [opts]) -> Promise`
+#### <a name="public"></a> `> access.public(spec, [opts]) -> Promise<Boolean>`
 
 `spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
 registry spec.
@@ -71,7 +71,7 @@ await access.public('@foo/bar', {token: 'myregistrytoken'})
 // `@foo/bar` is now public
 ```
 
-#### <a name="restricted"></a> `> access.restricted(spec, [opts]) -> Promise`
+#### <a name="restricted"></a> `> access.restricted(spec, [opts]) -> Promise<Boolean>`
 
 `spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
 registry spec.
@@ -85,7 +85,7 @@ await access.restricted('@foo/bar', {token: 'myregistrytoken'})
 // `@foo/bar` is now private
 ```
 
-#### <a name="grant"></a> `> access.grant(spec, team, permissions, [opts]) -> Promise`
+#### <a name="grant"></a> `> access.grant(spec, team, permissions, [opts]) -> Promise<Boolean>`
 
 `spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
 registry spec. `team` must be a fully-qualified team name, in the `scope:team`
@@ -103,7 +103,7 @@ await access.grant('@foo/bar', '@foo:myteam', 'read-write', {
 // `@foo/bar` is now read/write enabled for the @foo:myteam team.
 ```
 
-#### <a name="revoke"></a> `> access.revoke(spec, team, [opts]) -> Promise`
+#### <a name="revoke"></a> `> access.revoke(spec, team, [opts]) -> Promise<Boolean>`
 
 `spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
 registry spec. `team` must be a fully-qualified team name, in the `scope:team`
@@ -121,7 +121,7 @@ await access.revoke('@foo/bar', '@foo:myteam', {
 // @foo:myteam can no longer access `@foo/bar`
 ```
 
-#### <a name="tfa-required"></a> `> access.tfaRequired(spec, [opts]) -> Promise`
+#### <a name="tfa-required"></a> `> access.tfaRequired(spec, [opts]) -> Promise<Boolean>`
 
 `spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
 registry spec.
@@ -136,7 +136,7 @@ await access.tfaRequires('lodash', {token: 'myregistrytoken'})
 // Publishing or changing dist-tags on `lodash` now require OTP to be enabled.
 ```
 
-#### <a name="tfa-not-required"></a> `> access.tfaNotRequired(spec, [opts]) -> Promise`
+#### <a name="tfa-not-required"></a> `> access.tfaNotRequired(spec, [opts]) -> Promise<Boolean>`
 
 `spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
 registry spec.
@@ -152,7 +152,7 @@ await access.tfaNotRequired('lodash', {otp: '123654', token: 'myregistrytoken'})
 // enabled.
 ```
 
-#### <a name="ls-packages"></a> `> access.lsPackages(entity, [opts]) -> Promise`
+#### <a name="ls-packages"></a> `> access.lsPackages(entity, [opts]) -> Promise<Object | null>`
 
 `entity` must be either a valid org or user name, or a fully-qualified team name
 in the `scope:team` format, with or without the `@` prefix.
@@ -202,7 +202,7 @@ for await (let [pkg, perm] of access.lsPackages.stream('zkat')) {
 // zkat has read-only access to @npmcorp/secret
 ```
 
-#### <a name="ls-collaborators"></a> `> access.lsCollaborators(spec, [user], [opts]) -> Promise`
+#### <a name="ls-collaborators"></a> `> access.lsCollaborators(spec, [user], [opts]) -> Promise<Object | null>`
 
 `spec` must be an [`npm-package-arg`](https://npm.im/npm-package-arg)-compatible
 registry spec. `user` must be a valid user name, with or without the `@`
