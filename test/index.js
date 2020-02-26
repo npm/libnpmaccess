@@ -19,6 +19,16 @@ test('access public', t => {
   })
 })
 
+test('access public - failure', t => {
+  tnock(t, REG).post(
+    '/-/package/%40foo%2Fbar/access', { access: 'public' }
+  ).reply(418)
+  return access.public('@foo/bar', OPTS)
+    .catch(err => {
+      t.equals(err.statusCode, 418, 'fails with code from registry')
+    })
+})
+
 test('access restricted', t => {
   tnock(t, REG).post(
     '/-/package/%40foo%2Fbar/access', { access: 'restricted' }
@@ -26,6 +36,16 @@ test('access restricted', t => {
   return access.restricted('@foo/bar', OPTS).then(ret => {
     t.deepEqual(ret, true, 'request succeeded')
   })
+})
+
+test('access restricted - failure', t => {
+  tnock(t, REG).post(
+    '/-/package/%40foo%2Fbar/access', { access: 'restricted' }
+  ).reply(418)
+  return access.restricted('@foo/bar', OPTS)
+    .catch(err => {
+      t.equals(err.statusCode, 418, 'fails with code from registry')
+    })
 })
 
 test('access 2fa-required', t => {
