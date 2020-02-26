@@ -27,7 +27,7 @@ const cmd = module.exports = {}
 
 cmd.public = (spec, opts) => setAccess(spec, 'public', opts)
 cmd.restricted = (spec, opts) => setAccess(spec, 'restricted', opts)
-function setAccess (spec, access, opts) {
+function setAccess (spec, access, opts = {}) {
   return pwrap(opts, () => {
     spec = npar(spec)
     validate('OSO', [spec, access, opts])
@@ -41,7 +41,7 @@ function setAccess (spec, access, opts) {
   }).then(res => true)
 }
 
-cmd.grant = (spec, entity, permissions, opts) => {
+cmd.grant = (spec, entity, permissions, opts = {}) => {
   return pwrap(opts, () => {
     spec = npar(spec)
     const { scope, team } = splitEntity(entity)
@@ -61,7 +61,7 @@ cmd.grant = (spec, entity, permissions, opts) => {
   }).then(() => true)
 }
 
-cmd.revoke = (spec, entity, opts) => {
+cmd.revoke = (spec, entity, opts = {}) => {
   return pwrap(opts, () => {
     spec = npar(spec)
     const { scope, team } = splitEntity(entity)
@@ -94,7 +94,7 @@ cmd.lsPackages = (entity, opts) => {
   })
 }
 
-cmd.lsPackages.stream = (entity, opts) => {
+cmd.lsPackages.stream = (entity, opts = {}) => {
   validate('SO|SZ', [entity, opts])
   const { scope, team } = splitEntity(entity)
   let uri
@@ -154,7 +154,7 @@ cmd.lsCollaborators.stream = (spec, user, opts) => {
 
 cmd.tfaRequired = (spec, opts) => setRequires2fa(spec, true, opts)
 cmd.tfaNotRequired = (spec, opts) => setRequires2fa(spec, false, opts)
-function setRequires2fa (spec, required, opts) {
+function setRequires2fa (spec, required, opts = {}) {
   return new Promise((resolve, reject) => {
     spec = npar(spec)
     validate('OBO', [spec, required, opts])
