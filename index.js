@@ -28,69 +28,89 @@ const cmd = module.exports = {}
 cmd.public = (spec, opts) => setAccess(spec, 'public', opts)
 cmd.restricted = (spec, opts) => setAccess(spec, 'restricted', opts)
 function setAccess (spec, access, opts = {}) {
-  return pwrap(opts, () => {
-    spec = npar(spec)
-    validate('OSO', [spec, access, opts])
-    const uri = `/-/package/${eu(spec.name)}/access`
-    return npmFetch(uri, {
-      ...opts,
-      method: 'POST',
-      body: { access },
-      spec
-    })
-  }).then(res => true)
+  return new Promise((resolve, reject) => {
+    try {
+      spec = npar(spec)
+      validate('OSO', [spec, access, opts])
+      const uri = `/-/package/${eu(spec.name)}/access`
+      return npmFetch(uri, {
+        ...opts,
+        method: 'POST',
+        body: { access },
+        spec
+      })
+        .then(() => resolve(true))
+        .catch(reject)
+    } catch (err) {
+      return reject(err)
+    }
+  })
 }
 
 cmd.grant = (spec, entity, permissions, opts = {}) => {
-  return pwrap(opts, () => {
-    spec = npar(spec)
-    const { scope, team } = splitEntity(entity)
-    validate('OSSSO', [spec, scope, team, permissions, opts])
-    if (permissions !== 'read-write' && permissions !== 'read-only') {
-      throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '` instead')
+  return new Promise((resolve, reject) => {
+    try {
+      spec = npar(spec)
+      const { scope, team } = splitEntity(entity)
+      validate('OSSSO', [spec, scope, team, permissions, opts])
+      if (permissions !== 'read-write' && permissions !== 'read-only') {
+        throw new Error('`permissions` must be `read-write` or `read-only`. Got `' + permissions + '` instead')
+      }
+      const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
+      return npmFetch(uri, {
+        ...opts,
+        method: 'PUT',
+        body: { package: spec.name, permissions },
+        scope,
+        spec,
+        ignoreBody: true
+      })
+        .then(() => resolve(true))
+        .catch(reject)
+    } catch (err) {
+      return reject(err)
     }
-    const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
-    return npmFetch(uri, {
-      ...opts,
-      method: 'PUT',
-      body: { package: spec.name, permissions },
-      scope,
-      spec,
-      ignoreBody: true
-    })
-  }).then(() => true)
+  })
 }
 
 cmd.revoke = (spec, entity, opts = {}) => {
-  return pwrap(opts, () => {
-    spec = npar(spec)
-    const { scope, team } = splitEntity(entity)
-    validate('OSSO', [spec, scope, team, opts])
-    const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
-    return npmFetch(uri, {
-      ...opts,
-      method: 'DELETE',
-      body: { package: spec.name },
-      scope,
-      spec,
-      ignoreBody: true
-    })
-  }).then(() => true)
+  return new Promise((resolve, reject) => {
+    try {
+      spec = npar(spec)
+      const { scope, team } = splitEntity(entity)
+      validate('OSSO', [spec, scope, team, opts])
+      const uri = `/-/team/${eu(scope)}/${eu(team)}/package`
+      return npmFetch(uri, {
+        ...opts,
+        method: 'DELETE',
+        body: { package: spec.name },
+        scope,
+        spec,
+        ignoreBody: true
+      })
+        .then(() => resolve(true))
+        .catch(reject)
+    } catch (err) {
+      return reject(err)
+    }
+  })
 }
 
 cmd.lsPackages = (entity, opts) => {
-  return pwrap(opts, () => {
+  return new Promise((resolve, reject) => {
     return cmd.lsPackages.stream(entity, opts)
       .collect()
       .then(data => {
-        return data.reduce((acc, [key, val]) => {
+        const packageList = data.reduce((acc, [key, val]) => {
           if (!acc) {
             acc = {}
           }
           acc[key] = val
           return acc
         }, null)
+        return resolve(packageList)
       })
+      .catch(reject)
   })
 }
 
@@ -124,18 +144,20 @@ cmd.lsCollaborators = (spec, user, opts) => {
     opts = user
     user = undefined
   }
-  return pwrap(opts, () => {
+  return new Promise((resolve, reject) => {
     return cmd.lsCollaborators.stream(spec, user, opts)
       .collect()
       .then(data => {
-        return data.reduce((acc, [key, val]) => {
+        const collabList = data.reduce((acc, [key, val]) => {
           if (!acc) {
             acc = {}
           }
           acc[key] = val
           return acc
         }, null)
+        return resolve(collabList)
       })
+      .catch(reject)
   })
 }
 
@@ -156,17 +178,23 @@ cmd.tfaRequired = (spec, opts) => setRequires2fa(spec, true, opts)
 cmd.tfaNotRequired = (spec, opts) => setRequires2fa(spec, false, opts)
 function setRequires2fa (spec, required, opts = {}) {
   return new Promise((resolve, reject) => {
-    spec = npar(spec)
-    validate('OBO', [spec, required, opts])
-    const uri = `/-/package/${eu(spec.name)}/access`
-    return npmFetch(uri, {
-      ...opts,
-      method: 'POST',
-      body: { publish_requires_tfa: required },
-      spec,
-      ignoreBody: true
-    }).then(resolve, reject)
-  }).then(() => true)
+    try {
+      spec = npar(spec)
+      validate('OBO', [spec, required, opts])
+      const uri = `/-/package/${eu(spec.name)}/access`
+      return npmFetch(uri, {
+        ...opts,
+        method: 'POST',
+        body: { publish_requires_tfa: required },
+        spec,
+        ignoreBody: true
+      })
+        .then(() => resolve(true))
+        .catch(reject)
+    } catch (err) {
+      return reject(err)
+    }
+  })
 }
 
 cmd.edit = () => {
@@ -176,10 +204,4 @@ cmd.edit = () => {
 function splitEntity (entity = '') {
   const [, scope, team] = entity.match(/^@?([^:]+)(?::(.*))?$/) || []
   return { scope, team }
-}
-
-function pwrap (opts, fn) {
-  return new Promise((resolve, reject) => {
-    fn().then(resolve, reject)
-  })
 }
