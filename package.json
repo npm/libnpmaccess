@@ -12,7 +12,7 @@
     "test": "tap -J --100 test/*.js"
   },
   "devDependencies": {
-    "nock": "^9.6.1",
+    "nock": "^12.0.1",
     "standard": "^14.3.0",
     "standard-version": "^7.0.0",
     "tap": "^14.10.6"
