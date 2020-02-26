@@ -27,7 +27,7 @@
     "aproba": "^2.0.0",
     "minipass": "^3.1.1",
     "npm-package-arg": "^8.0.0",
-    "npm-registry-fetch": "^4.0.0"
+    "npm-registry-fetch": "^8.0.0"
   },
   "engines": {
     "node": ">=10"
