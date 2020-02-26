@@ -130,6 +130,21 @@ test('access grant basic unscoped', t => {
   })
 })
 
+test('access grant no opts passed', t => {
+  // NOTE: mocking real url, because no opts variable means `registry` value
+  // will be defauled to real registry url
+  tnock(t, 'https://registry.npmjs.org')
+    .put('/-/team/myorg/myteam/package', {
+      package: 'bar',
+      permissions: 'read-write'
+    })
+    .reply(201)
+  return access.grant('bar', 'myorg:myteam', 'read-write')
+    .then(ret => {
+      t.equals(ret, true, 'request succeeded')
+    })
+})
+
 test('access revoke basic', t => {
   tnock(t, REG).delete('/-/team/myorg/myteam/package', {
     package: '@foo/bar'
@@ -146,6 +161,20 @@ test('access revoke basic unscoped', t => {
   return access.revoke('bar', 'myorg:myteam', OPTS).then(ret => {
     t.deepEqual(ret, true, 'request succeeded')
   })
+})
+
+test('access revoke no opts passed', t => {
+  // NOTE: mocking real url, because no opts variable means `registry` value
+  // will be defauled to real registry url
+  tnock(t, 'https://registry.npmjs.org')
+    .delete('/-/team/myorg/myteam/package', {
+      package: 'bar'
+    })
+    .reply(201)
+  return access.revoke('bar', 'myorg:myteam')
+    .then(ret => {
+      t.equals(ret, true, 'request succeeded')
+    })
 })
 
 test('ls-packages on team', t => {
@@ -247,6 +276,29 @@ test('ls-packages stream', t => {
     '/-/team/myorg/myteam/package?format=cli'
   ).reply(200, serverPackages)
   return access.lsPackages.stream('myorg:myteam', OPTS)
+    .collect()
+    .then(data => {
+      t.deepEqual(data, clientPackages, 'got streamed client package info')
+    })
+})
+
+test('ls-packages stream no opts', t => {
+  const serverPackages = {
+    '@foo/bar': 'write',
+    '@foo/util': 'read',
+    '@foo/other': 'shrödinger'
+  }
+  const clientPackages = [
+    ['@foo/bar', 'read-write'],
+    ['@foo/util', 'read-only'],
+    ['@foo/other', 'shrödinger']
+  ]
+  // NOTE: mocking real url, because no opts variable means `registry` value
+  // will be defauled to real registry url
+  tnock(t, 'https://registry.npmjs.org')
+    .get('/-/team/myorg/myteam/package?format=cli')
+    .reply(200, serverPackages)
+  return access.lsPackages.stream('myorg:myteam')
     .collect()
     .then(data => {
       t.deepEqual(data, clientPackages, 'got streamed client package info')
