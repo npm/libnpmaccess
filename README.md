@@ -73,7 +73,6 @@ A couple of options of note for those in a hurry:
 
 * `opts.token` - can be passed in and will be used as the authentication token for the registry. For other ways to pass in auth details, see the n-r-f docs.
 * `opts.otp` - certain operations will require an OTP token to be passed in. If a `libnpmaccess` command fails with `err.code === EOTP`, please retry the request with `{otp: <2fa token>}`
-* `opts.Promise` - If you pass this in, the Promises returned by `libnpmaccess` commands will use this Promise class instead. For example: `{Promise: require('bluebird')}`
 
 #### <a name="public"></a> `> access.public(spec, [opts]) -> Promise`
 
