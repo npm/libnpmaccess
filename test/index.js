@@ -1,6 +1,6 @@
 'use strict'
 
-const { test } = require('tap')
+const t = require('tap')
 const tnock = require('./util/tnock.js')
 
 const access = require('../index.js')
@@ -10,7 +10,7 @@ const OPTS = {
   registry: REG
 }
 
-test('access public', t => {
+t.test('access public', t => {
   tnock(t, REG).post(
     '/-/package/%40foo%2Fbar/access', { access: 'public' }
   ).reply(200)
@@ -19,7 +19,7 @@ test('access public', t => {
   })
 })
 
-test('access public - failure', t => {
+t.test('access public - failure', t => {
   tnock(t, REG).post(
     '/-/package/%40foo%2Fbar/access', { access: 'public' }
   ).reply(418)
@@ -29,7 +29,7 @@ test('access public - failure', t => {
     })
 })
 
-test('access restricted', t => {
+t.test('access restricted', t => {
   tnock(t, REG).post(
     '/-/package/%40foo%2Fbar/access', { access: 'restricted' }
   ).reply(200)
@@ -38,7 +38,7 @@ test('access restricted', t => {
   })
 })
 
-test('access restricted - failure', t => {
+t.test('access restricted - failure', t => {
   tnock(t, REG).post(
     '/-/package/%40foo%2Fbar/access', { access: 'restricted' }
   ).reply(418)
@@ -48,7 +48,7 @@ test('access restricted - failure', t => {
     })
 })
 
-test('access 2fa-required', t => {
+t.test('access 2fa-required', t => {
   tnock(t, REG).post('/-/package/%40foo%2Fbar/access', {
     publish_requires_tfa: true
   }).reply(200, { ok: true })
@@ -57,7 +57,7 @@ test('access 2fa-required', t => {
   })
 })
 
-test('access 2fa-not-required', t => {
+t.test('access 2fa-not-required', t => {
   tnock(t, REG).post('/-/package/%40foo%2Fbar/access', {
     publish_requires_tfa: false
   }).reply(200, { ok: true })
@@ -66,7 +66,7 @@ test('access 2fa-not-required', t => {
   })
 })
 
-test('access grant basic read-write', t => {
+t.test('access grant basic read-write', t => {
   tnock(t, REG).put('/-/team/myorg/myteam/package', {
     package: '@foo/bar',
     permissions: 'read-write'
@@ -78,7 +78,7 @@ test('access grant basic read-write', t => {
   })
 })
 
-test('access grant basic read-only', t => {
+t.test('access grant basic read-only', t => {
   tnock(t, REG).put('/-/team/myorg/myteam/package', {
     package: '@foo/bar',
     permissions: 'read-only'
@@ -90,7 +90,7 @@ test('access grant basic read-only', t => {
   })
 })
 
-test('access grant bad perm', t => {
+t.test('access grant bad perm', t => {
   return access.grant(
     '@foo/bar', 'myorg:myteam', 'unknown', OPTS
   ).then(ret => {
@@ -104,7 +104,7 @@ test('access grant bad perm', t => {
   })
 })
 
-test('access grant no entity', t => {
+t.test('access grant no entity', t => {
   return access.grant(
     '@foo/bar', undefined, 'read-write', OPTS
   ).then(ret => {
@@ -118,7 +118,7 @@ test('access grant no entity', t => {
   })
 })
 
-test('access grant basic unscoped', t => {
+t.test('access grant basic unscoped', t => {
   tnock(t, REG).put('/-/team/myorg/myteam/package', {
     package: 'bar',
     permissions: 'read-write'
@@ -130,7 +130,7 @@ test('access grant basic unscoped', t => {
   })
 })
 
-test('access grant no opts passed', t => {
+t.test('access grant no opts passed', t => {
   // NOTE: mocking real url, because no opts variable means `registry` value
   // will be defauled to real registry url
   tnock(t, 'https://registry.npmjs.org')
@@ -145,7 +145,7 @@ test('access grant no opts passed', t => {
     })
 })
 
-test('access revoke basic', t => {
+t.test('access revoke basic', t => {
   tnock(t, REG).delete('/-/team/myorg/myteam/package', {
     package: '@foo/bar'
   }).reply(200)
@@ -154,7 +154,7 @@ test('access revoke basic', t => {
   })
 })
 
-test('access revoke basic unscoped', t => {
+t.test('access revoke basic unscoped', t => {
   tnock(t, REG).delete('/-/team/myorg/myteam/package', {
     package: 'bar'
   }).reply(200, { accessChanged: true })
@@ -163,7 +163,7 @@ test('access revoke basic unscoped', t => {
   })
 })
 
-test('access revoke no opts passed', t => {
+t.test('access revoke no opts passed', t => {
   // NOTE: mocking real url, because no opts variable means `registry` value
   // will be defauled to real registry url
   tnock(t, 'https://registry.npmjs.org')
@@ -177,7 +177,7 @@ test('access revoke no opts passed', t => {
     })
 })
 
-test('ls-packages on team', t => {
+t.test('ls-packages on team', t => {
   const serverPackages = {
     '@foo/bar': 'write',
     '@foo/util': 'read',
@@ -196,7 +196,7 @@ test('ls-packages on team', t => {
   })
 })
 
-test('ls-packages on org', t => {
+t.test('ls-packages on org', t => {
   const serverPackages = {
     '@foo/bar': 'write',
     '@foo/util': 'read',
@@ -215,7 +215,7 @@ test('ls-packages on org', t => {
   })
 })
 
-test('ls-packages on user', t => {
+t.test('ls-packages on user', t => {
   const serverPackages = {
     '@foo/bar': 'write',
     '@foo/util': 'read',
@@ -234,7 +234,7 @@ test('ls-packages on user', t => {
   })
 })
 
-test('ls-packages error on team', t => {
+t.test('ls-packages error on team', t => {
   tnock(t, REG).get('/-/team/myorg/myteam/package?format=cli').reply(404)
   return access.lsPackages('myorg:myteam', OPTS).then(
     () => { throw new Error('should not have succeeded') },
@@ -242,7 +242,7 @@ test('ls-packages error on team', t => {
   )
 })
 
-test('ls-packages error on user', t => {
+t.test('ls-packages error on user', t => {
   const srv = tnock(t, REG)
   srv.get('/-/org/myuser/package?format=cli').reply(404, { error: 'not found' })
   srv.get('/-/user/myuser/package?format=cli').reply(404, { error: 'not found' })
@@ -252,7 +252,7 @@ test('ls-packages error on user', t => {
   )
 })
 
-test('ls-packages bad response', t => {
+t.test('ls-packages bad response', t => {
   tnock(t, REG).get(
     '/-/team/myorg/myteam/package?format=cli'
   ).reply(200, JSON.stringify(null))
@@ -261,7 +261,7 @@ test('ls-packages bad response', t => {
   })
 })
 
-test('ls-packages stream', t => {
+t.test('ls-packages stream', t => {
   const serverPackages = {
     '@foo/bar': 'write',
     '@foo/util': 'read',
@@ -282,7 +282,7 @@ test('ls-packages stream', t => {
     })
 })
 
-test('ls-packages stream no opts', t => {
+t.test('ls-packages stream no opts', t => {
   const serverPackages = {
     '@foo/bar': 'write',
     '@foo/util': 'read',
@@ -305,7 +305,7 @@ test('ls-packages stream no opts', t => {
     })
 })
 
-test('ls-collaborators', t => {
+t.test('ls-collaborators', t => {
   const serverCollaborators = {
     'myorg:myteam': 'write',
     'myorg:anotherteam': 'read',
@@ -324,7 +324,7 @@ test('ls-collaborators', t => {
   })
 })
 
-test('ls-collaborators stream', t => {
+t.test('ls-collaborators stream', t => {
   const serverCollaborators = {
     'myorg:myteam': 'write',
     'myorg:anotherteam': 'read',
@@ -345,7 +345,7 @@ test('ls-collaborators stream', t => {
     })
 })
 
-test('ls-collaborators w/scope', t => {
+t.test('ls-collaborators w/scope', t => {
   const serverCollaborators = {
     'myorg:myteam': 'write',
     'myorg:anotherteam': 'read',
@@ -364,7 +364,7 @@ test('ls-collaborators w/scope', t => {
   })
 })
 
-test('ls-collaborators w/o scope', t => {
+t.test('ls-collaborators w/o scope', t => {
   const serverCollaborators = {
     'myorg:myteam': 'write',
     'myorg:anotherteam': 'read',
@@ -383,7 +383,7 @@ test('ls-collaborators w/o scope', t => {
   })
 })
 
-test('ls-collaborators bad response', t => {
+t.test('ls-collaborators bad response', t => {
   tnock(t, REG).get(
     '/-/package/%40foo%2Fbar/collaborators?format=cli'
   ).reply(200, JSON.stringify(null))
@@ -392,7 +392,7 @@ test('ls-collaborators bad response', t => {
   })
 })
 
-test('error on non-registry specs', t => {
+t.test('error on non-registry specs', t => {
   const resolve = () => { throw new Error('should not succeed') }
   const reject = err => t.match(
     err.message, /spec.*must be a registry spec/, 'registry spec required'
@@ -408,7 +408,7 @@ test('error on non-registry specs', t => {
   ])
 })
 
-test('edit', t => {
+t.test('edit', t => {
   t.equal(typeof access.edit, 'function', 'access.edit exists')
   t.throws(() => {
     access.edit()
