@@ -25,7 +25,7 @@
   "dependencies": {
     "aproba": "^2.0.0",
     "minipass": "^3.1.1",
-    "npm-package-arg": "^8.0.0",
+    "npm-package-arg": "^8.1.2",
     "npm-registry-fetch": "^10.0.0"
   },
   "engines": {
