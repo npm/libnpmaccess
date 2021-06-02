@@ -1,6 +1,6 @@
 {
   "name": "libnpmaccess",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "programmatic library for `npm access` commands",
   "author": "Kat Marchán <kzm@sykosomatic.org>",
   "license": "ISC",
