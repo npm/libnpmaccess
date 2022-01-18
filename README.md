@@ -1,3 +1,14 @@
+# We've Moved! 🚚
+The code for this repo is now a workspace in the npm CLI repo.
+
+[github.com/npm/cli](https://github.com/npm/cli)
+
+You can find the workspace in /workspaces/libnpmaccess
+
+Please file bugs and feature requests as issues on the CLI and tag the issue with "ws:libnpmaccess".
+
+[github.com/npm/cli/issues](https://github.com/npm/cli)
+
 # libnpmaccess
 
 [![npm version](https://img.shields.io/npm/v/libnpmaccess.svg)](https://npm.im/libnpmaccess)
